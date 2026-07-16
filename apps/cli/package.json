@@ -1,0 +1,44 @@
+{
+  "name": "@851-labs/yesvnc",
+  "version": "0.1.0",
+  "description": "Manage VNC connections from the command line and open them in your browser.",
+  "keywords": [
+    "cli",
+    "macos",
+    "novnc",
+    "remote-desktop",
+    "vnc"
+  ],
+  "license": "MIT",
+  "bin": {
+    "yesvnc": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": "./dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "build:viewer": "bun build src/viewer/client.ts --target browser --outfile dist/viewer.js",
+    "cli": "bun run build:viewer && bun src/index.ts",
+    "prepack": "bun run build",
+    "smoke": "bun scripts/server-smoke.ts",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "catalog:",
+    "@novnc/novnc": "catalog:",
+    "@yesvnc/config": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

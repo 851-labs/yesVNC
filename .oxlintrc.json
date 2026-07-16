@@ -1,0 +1,12 @@
+{
+  "categories": {
+    "correctness": "error",
+    "perf": "warn",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "no-underscore-dangle": "off",
+    "typescript/consistent-return": "off"
+  },
+  "ignorePatterns": ["**/dist/**", "**/node_modules/**"]
+}
