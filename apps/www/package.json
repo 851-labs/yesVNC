@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "deploy": "bun run build && wrangler deploy",
     "dev": "vite --host 127.0.0.1",
+    "preview": "bun run build && wrangler dev",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --project tsconfig.json"
   },
@@ -19,6 +21,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
   }
 }
