@@ -13,6 +13,7 @@ declare module "@novnc/novnc" {
     background: string;
     resizeSession: boolean;
     scaleViewport: boolean;
+    showDotCursor: boolean;
     viewOnly: boolean;
 
     constructor(target: HTMLElement, url: string, options?: RfbOptions);

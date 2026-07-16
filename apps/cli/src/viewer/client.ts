@@ -52,6 +52,7 @@ function connect() {
   });
   rfb.scaleViewport = true;
   rfb.resizeSession = true;
+  rfb.showDotCursor = true;
   rfb.viewOnly = session.viewOnly ?? false;
   rfb.background = "#090b0e";
   rfb.addEventListener("connect", () => {
