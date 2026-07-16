@@ -1,7 +1,7 @@
 #!/bin/sh
-# yesVNC installer — https://yesvnc.com/install.sh
+# yesVNC installer — https://yesvnc.851.workers.dev/install.sh
 #
-#   curl -fsSL https://yesvnc.com/install.sh | sh
+#   curl -fsSL https://yesvnc.851.workers.dev/install.sh | sh
 
 set -eu
 

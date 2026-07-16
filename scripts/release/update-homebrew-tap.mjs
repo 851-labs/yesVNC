@@ -26,7 +26,7 @@ writeFileSync(
   join(tapDir, "Formula", "yesvnc.rb"),
   `class Yesvnc < Formula
   desc "Manage VNC connections and open them in a local browser viewer"
-  homepage "https://yesvnc.com"
+  homepage "https://yesvnc.851.workers.dev"
   version "${version}"
   license "MIT"
 

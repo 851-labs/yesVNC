@@ -15,7 +15,7 @@ brew install 851-labs/tap/yesvnc
 or:
 
 ```sh
-curl -fsSL https://yesvnc.com/install.sh | sh
+curl -fsSL https://yesvnc.851.workers.dev/install.sh | sh
 ```
 
 The production domain and release bucket are intentionally easy to replace before launch.

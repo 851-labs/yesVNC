@@ -5,7 +5,7 @@ import "./styles.css";
 
 const installCommands = {
   brew: "brew install 851-labs/tap/yesvnc",
-  curl: "curl -fsSL https://yesvnc.com/install.sh | sh",
+  curl: "curl -fsSL https://yesvnc.851.workers.dev/install.sh | sh",
 };
 
 function App() {
