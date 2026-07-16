@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "yesvnc-www",
+  "name": "yesvnc",
   "compatibility_date": "2026-07-16",
   "workers_dev": true,
   "preview_urls": true,
