@@ -12,6 +12,8 @@ rm -rf "$work_dir"
 mkdir -p "$work_dir/bin" "$work_dir/share/yesvnc" "$out_dir"
 cp "$root_dir/apps/cli/node_modules/@novnc/novnc/LICENSE.txt" "$work_dir/share/yesvnc/LICENSE.noVNC.txt"
 
+bun "$root_dir/apps/cli/scripts/build-novnc.ts" "$work_dir/share/yesvnc/novnc"
+
 bun build "$root_dir/apps/cli/src/viewer/client.ts" \
   --target browser \
   --minify \

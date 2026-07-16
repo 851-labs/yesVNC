@@ -8,5 +8,5 @@
     "no-underscore-dangle": "off",
     "typescript/consistent-return": "off"
   },
-  "ignorePatterns": ["**/dist/**", "**/node_modules/**"]
+  "ignorePatterns": ["**/dist/**", "**/node_modules/**", "apps/cli/vendor/novnc/**"]
 }

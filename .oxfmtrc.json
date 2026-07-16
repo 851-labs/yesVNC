@@ -1,4 +1,5 @@
 {
+  "ignorePatterns": ["apps/cli/vendor/novnc/**"],
   "printWidth": 100,
   "semi": true,
   "singleQuote": false,

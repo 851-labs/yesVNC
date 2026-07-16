@@ -1,5 +1,7 @@
 import { chmod, copyFile, mkdir, rm } from "node:fs/promises";
 
+import { copyNoVncAssets } from "./novnc-assets";
+
 const dist = new URL("../dist/", import.meta.url);
 await rm(dist, { force: true, recursive: true });
 await mkdir(dist, { recursive: true });
@@ -29,3 +31,4 @@ await copyFile(
   new URL("../node_modules/@novnc/novnc/LICENSE.txt", import.meta.url),
   new URL("THIRD_PARTY_LICENSES/noVNC.txt", dist),
 );
+await copyNoVncAssets(new URL("novnc/", dist).pathname);

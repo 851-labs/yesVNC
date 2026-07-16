@@ -46,11 +46,15 @@ export const connectCommand = Command.make(
       Flag.withDescription("Override the VNC username"),
       Flag.optional,
     ),
+    viewer: Flag.choice("viewer", ["yesvnc", "novnc"]).pipe(
+      Flag.withDescription("Browser viewer interface to use"),
+      Flag.withDefault("yesvnc"),
+    ),
     viewOnly: Flag.boolean("view-only").pipe(
       Flag.withDescription("Disable keyboard and pointer input"),
     ),
   },
-  ({ noOpen, port, target, username, viewOnly }) =>
+  ({ noOpen, port, target, username, viewer, viewOnly }) =>
     Effect.gen(function* () {
       const store = yield* Effect.service(ConnectionStoreService);
       const browser = yield* Effect.service(BrowserService);
@@ -62,7 +66,7 @@ export const connectCommand = Command.make(
       };
       const password = process.env.YESVNC_PASSWORD;
       const localPort = Option.getOrUndefined(port);
-      const viewer = yield* Effect.tryPromise({
+      const viewerServer = yield* Effect.tryPromise({
         try: () =>
           startViewerServer(
             {
@@ -70,25 +74,28 @@ export const connectCommand = Command.make(
               ...(password ? { password } : {}),
               viewOnly,
             },
-            localPort === undefined ? {} : { port: localPort },
+            {
+              ...(localPort === undefined ? {} : { port: localPort }),
+              viewer,
+            },
           ),
         catch: (cause) => new ViewerStartError({ cause }),
       });
 
       yield* Effect.sync(() => {
         console.log(`Connecting to ${formatVncAddress(resolved)}`);
-        console.log(`Viewer: ${viewer.url}`);
+        console.log(`Viewer: ${viewerServer.url}`);
         console.log("Press Ctrl-C to stop the local server.");
       });
 
       if (!noOpen) {
         yield* browser
-          .open(viewer.url)
-          .pipe(Effect.mapError((cause) => new BrowserOpenError({ cause, url: viewer.url })));
+          .open(viewerServer.url)
+          .pipe(Effect.mapError((cause) => new BrowserOpenError({ cause, url: viewerServer.url })));
       }
 
       yield* Effect.tryPromise(() => waitForShutdown()).pipe(
-        Effect.ensuring(Effect.sync(() => viewer.stop())),
+        Effect.ensuring(Effect.sync(() => viewerServer.stop())),
       );
     }),
 ).pipe(
@@ -102,6 +109,10 @@ export const connectCommand = Command.make(
     {
       command: "yesvnc connect studio --view-only",
       description: "Connect without sending input",
+    },
+    {
+      command: "yesvnc connect studio --viewer novnc",
+      description: "Connect with the full noVNC control bar",
     },
   ]),
 );
