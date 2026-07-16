@@ -20,14 +20,6 @@ export class ConnectionExistsError extends Data.TaggedError("ConnectionExistsErr
   }
 }
 
-export class InvalidVncAddressError extends Data.TaggedError("InvalidVncAddressError")<{
-  readonly address: string;
-}> {
-  override get message() {
-    return `error: invalid VNC address "${this.address}"\nhint: use host, host:port, or vnc://host:port`;
-  }
-}
-
 export const addCommand = Command.make(
   "add",
   {
@@ -51,10 +43,7 @@ export const addCommand = Command.make(
       if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(name)) {
         return yield* Effect.fail(new InvalidConnectionNameError({ name }));
       }
-      const parsed = yield* Effect.try({
-        try: () => parseVncAddress(address),
-        catch: () => new InvalidVncAddressError({ address }),
-      });
+      const parsed = yield* parseVncAddress(address);
       const store = yield* Effect.service(ConnectionStoreService);
       const resolvedUsername = Option.getOrUndefined(username) ?? parsed.username;
       const connection = {

@@ -115,10 +115,10 @@ function resolveTarget(
     const saved = connections.find((connection) => connection.name === target);
     if (saved) return saved;
 
-    return yield* Effect.try({
-      try: () => ({ ...parseVncAddress(target), name: target }),
-      catch: () => new ConnectTargetError({ target }),
-    });
+    return yield* parseVncAddress(target).pipe(
+      Effect.map((address) => ({ ...address, name: target })),
+      Effect.mapError(() => new ConnectTargetError({ target })),
+    );
   });
 }
 

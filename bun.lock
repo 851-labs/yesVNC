@@ -52,6 +52,9 @@
     "packages/config": {
       "name": "@yesvnc/config",
       "version": "0.1.0",
+      "dependencies": {
+        "effect": "catalog:",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
         "typescript": "catalog:",

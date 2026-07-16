@@ -2,7 +2,7 @@ import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
-import { type Connection, type ConnectionStore, parseConnectionStore } from "@yesvnc/config";
+import { type Connection, type ConnectionStore, decodeConnectionStoreJson } from "@yesvnc/config";
 import { Context, Data, Effect, Layer } from "effect";
 
 const emptyStore: ConnectionStore = { version: 1, connections: [] };
@@ -38,9 +38,10 @@ export function getStorePath(env: Record<string, string | undefined> = process.e
 
 export function readStore(path = getStorePath()) {
   return Effect.tryPromise({
-    try: async () => parseConnectionStore(JSON.parse(await readFile(path, "utf8"))),
+    try: () => readFile(path, "utf8"),
     catch: (cause) => cause,
   }).pipe(
+    Effect.flatMap(decodeConnectionStoreJson),
     Effect.catch((cause) => {
       if (hasErrorCode(cause, "ENOENT")) return Effect.succeed(emptyStore);
       return Effect.fail(new StoreReadError({ cause, path }));

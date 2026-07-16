@@ -1,63 +1,75 @@
+import { Data, Effect, Schema, type SchemaError } from "effect";
+
 export const DEFAULT_VNC_PORT = 5900;
 
-export interface Connection {
-  readonly host: string;
-  readonly name: string;
-  readonly port: number;
-  readonly username?: string;
-}
+const NonEmptyString = Schema.String.check(Schema.isNonEmpty());
+const VncPort = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 65_535 }));
 
-export interface ConnectionStore {
-  readonly connections: readonly Connection[];
-  readonly version: 1;
-}
+export const VncAddressSchema = Schema.Struct({
+  host: NonEmptyString,
+  port: VncPort,
+  username: Schema.optionalKey(Schema.String),
+});
 
-export interface VncAddress {
-  readonly host: string;
-  readonly port: number;
-  readonly username?: string;
-}
+export type VncAddress = typeof VncAddressSchema.Type;
 
-export class InvalidAddressError extends Error {
-  readonly _tag = "InvalidAddressError";
+export const ConnectionSchema = Schema.Struct({
+  host: NonEmptyString,
+  name: NonEmptyString,
+  port: VncPort,
+  username: Schema.optionalKey(Schema.String),
+});
 
-  constructor(readonly address: string) {
-    super(`Invalid VNC address: ${address}`);
+export type Connection = typeof ConnectionSchema.Type;
+
+export const ConnectionStoreSchema = Schema.Struct({
+  connections: Schema.Array(ConnectionSchema),
+  version: Schema.Literal(1),
+});
+
+export type ConnectionStore = typeof ConnectionStoreSchema.Type;
+
+export const ConnectionStoreJsonSchema = Schema.fromJsonString(ConnectionStoreSchema);
+
+export class InvalidAddressError extends Data.TaggedError("InvalidAddressError")<{
+  readonly address: string;
+}> {
+  override get message() {
+    return `error: invalid VNC address "${this.address}"\nhint: use host, host:port, or vnc://host:port`;
   }
 }
 
-export function parseVncAddress(input: string): VncAddress {
-  const trimmed = input.trim();
-  if (trimmed.length === 0) {
-    throw new InvalidAddressError(input);
-  }
+export type ConnectionDecodeError = SchemaError.SchemaError;
 
-  let url: URL;
-  try {
-    url = new URL(trimmed.includes("://") ? trimmed : `vnc://${trimmed}`);
-  } catch {
-    throw new InvalidAddressError(input);
-  }
+export const decodeConnection = Schema.decodeUnknownEffect(ConnectionSchema);
+export const decodeConnectionStore = Schema.decodeUnknownEffect(ConnectionStoreSchema);
+export const decodeConnectionStoreJson = Schema.decodeUnknownEffect(ConnectionStoreJsonSchema);
+export const decodeVncAddress = Schema.decodeUnknownEffect(VncAddressSchema);
 
-  if (url.protocol !== "vnc:") {
-    throw new InvalidAddressError(input);
-  }
+export function parseVncAddress(input: string): Effect.Effect<VncAddress, InvalidAddressError> {
+  return Effect.gen(function* () {
+    const trimmed = input.trim();
+    if (trimmed.length === 0) return yield* invalidAddress(input);
 
-  const port = url.port.length > 0 ? Number(url.port) : DEFAULT_VNC_PORT;
-  if (!url.hostname || !Number.isInteger(port) || port < 1 || port > 65_535) {
-    throw new InvalidAddressError(input);
-  }
+    const url = yield* Effect.try({
+      try: () => new URL(trimmed.includes("://") ? trimmed : `vnc://${trimmed}`),
+      catch: () => new InvalidAddressError({ address: input }),
+    });
+    if (url.protocol !== "vnc:") return yield* invalidAddress(input);
 
-  const username = decodeURIComponent(url.username);
-  const host =
-    url.hostname.startsWith("[") && url.hostname.endsWith("]")
-      ? url.hostname.slice(1, -1)
-      : url.hostname;
-  return {
-    host,
-    port,
-    ...(username.length > 0 ? { username } : {}),
-  };
+    const port = url.port.length > 0 ? Number(url.port) : DEFAULT_VNC_PORT;
+    const username = decodeURIComponent(url.username);
+    const host =
+      url.hostname.startsWith("[") && url.hostname.endsWith("]")
+        ? url.hostname.slice(1, -1)
+        : url.hostname;
+
+    return yield* decodeVncAddress({
+      host,
+      port,
+      ...(username.length > 0 ? { username } : {}),
+    }).pipe(Effect.mapError(() => new InvalidAddressError({ address: input })));
+  });
 }
 
 export function formatVncAddress(connection: VncAddress): string {
@@ -67,29 +79,9 @@ export function formatVncAddress(connection: VncAddress): string {
 }
 
 export function isConnection(value: unknown): value is Connection {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as Partial<Connection>;
-  return (
-    typeof candidate.name === "string" &&
-    candidate.name.length > 0 &&
-    typeof candidate.host === "string" &&
-    candidate.host.length > 0 &&
-    typeof candidate.port === "number" &&
-    Number.isInteger(candidate.port) &&
-    candidate.port > 0 &&
-    candidate.port <= 65_535 &&
-    (candidate.username === undefined || typeof candidate.username === "string")
-  );
+  return Schema.is(ConnectionSchema)(value);
 }
 
-export function parseConnectionStore(value: unknown): ConnectionStore {
-  if (!value || typeof value !== "object") throw new Error("Expected a JSON object");
-  const candidate = value as Partial<ConnectionStore>;
-  if (candidate.version !== 1 || !Array.isArray(candidate.connections)) {
-    throw new Error("Expected a version 1 connection store");
-  }
-  if (!candidate.connections.every(isConnection)) {
-    throw new Error("The connection store contains an invalid connection");
-  }
-  return { version: 1, connections: candidate.connections };
+function invalidAddress(address: string): Effect.Effect<never, InvalidAddressError> {
+  return Effect.fail(new InvalidAddressError({ address }));
 }
