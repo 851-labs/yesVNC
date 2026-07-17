@@ -68,6 +68,12 @@ async function smokeViewer() {
 
     const staticAsset = await fetch(`http://127.0.0.1:${viewer.port}/app/ui.js`);
     if (!staticAsset.ok) throw new Error("noVNC static assets were not served");
+    const bootstrap = await fetch(`http://127.0.0.1:${viewer.port}/app/yesvnc-bootstrap.js`).then(
+      (response) => response.text(),
+    );
+    if (!bootstrap.includes("RFB.cursors.dot = fallbackCursor")) {
+      throw new Error("Accessible noVNC fallback cursor was not served");
+    }
     const missing = await fetch(`http://127.0.0.1:${viewer.port}/missing.js`);
     if (missing.status !== 404) throw new Error("Missing noVNC assets did not return 404");
   } finally {
