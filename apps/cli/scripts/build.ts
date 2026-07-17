@@ -7,13 +7,6 @@ await rm(dist, { force: true, recursive: true });
 await mkdir(dist, { recursive: true });
 await mkdir(new URL("THIRD_PARTY_LICENSES/", dist), { recursive: true });
 
-const viewer = await Bun.build({
-  entrypoints: [new URL("../src/viewer/client.ts", import.meta.url).pathname],
-  minify: true,
-  outdir: dist.pathname,
-  target: "browser",
-});
-
 const cli = await Bun.build({
   entrypoints: [new URL("../src/index.ts", import.meta.url).pathname],
   minify: true,
@@ -21,8 +14,8 @@ const cli = await Bun.build({
   target: "bun",
 });
 
-if (!viewer.success || !cli.success) {
-  for (const log of [...viewer.logs, ...cli.logs]) console.error(log);
+if (!cli.success) {
+  for (const log of cli.logs) console.error(log);
   process.exit(1);
 }
 

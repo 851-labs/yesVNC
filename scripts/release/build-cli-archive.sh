@@ -14,11 +14,6 @@ cp "$root_dir/apps/cli/node_modules/@novnc/novnc/LICENSE.txt" "$work_dir/share/y
 
 bun "$root_dir/apps/cli/scripts/build-novnc.ts" "$work_dir/share/yesvnc/novnc"
 
-bun build "$root_dir/apps/cli/src/viewer/client.ts" \
-  --target browser \
-  --minify \
-  --outfile "$work_dir/share/yesvnc/viewer.js"
-
 bun build "$root_dir/apps/cli/src/index.ts" \
   --compile \
   --minify \

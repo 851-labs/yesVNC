@@ -1,6 +1,6 @@
 {
   "name": "@851-labs/yesvnc",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Manage VNC connections from the command line and open them in your browser.",
   "keywords": [
     "cli",
@@ -24,8 +24,7 @@
   "scripts": {
     "build": "bun scripts/build.ts",
     "build:novnc": "bun scripts/build-novnc.ts",
-    "build:viewer": "bun build src/viewer/client.ts --target browser --outfile dist/viewer.js",
-    "cli": "bun run build:viewer && bun run build:novnc && bun src/index.ts",
+    "cli": "bun run build:novnc && bun src/index.ts",
     "prepack": "bun run build",
     "smoke": "bun scripts/server-smoke.ts",
     "test": "vitest run --passWithNoTests",

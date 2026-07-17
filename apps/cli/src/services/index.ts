@@ -4,7 +4,7 @@ import { BrowserLive } from "./browser";
 import { ConnectionStoreLive } from "./store";
 
 export { BrowserLive, BrowserService } from "./browser";
-export { startViewerServer, type ViewerKind, type ViewerServer, type ViewerTarget } from "./server";
+export { startViewerServer, type ViewerServer, type ViewerTarget } from "./server";
 export {
   ConnectionStoreLive,
   ConnectionStoreService,

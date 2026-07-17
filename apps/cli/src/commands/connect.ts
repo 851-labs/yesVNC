@@ -46,15 +46,11 @@ export const connectCommand = Command.make(
       Flag.withDescription("Override the VNC username"),
       Flag.optional,
     ),
-    viewer: Flag.choice("viewer", ["yesvnc", "novnc"]).pipe(
-      Flag.withDescription("Browser viewer interface to use"),
-      Flag.withDefault("yesvnc"),
-    ),
     viewOnly: Flag.boolean("view-only").pipe(
       Flag.withDescription("Disable keyboard and pointer input"),
     ),
   },
-  ({ noOpen, port, target, username, viewer, viewOnly }) =>
+  ({ noOpen, port, target, username, viewOnly }) =>
     Effect.gen(function* () {
       const store = yield* Effect.service(ConnectionStoreService);
       const browser = yield* Effect.service(BrowserService);
@@ -74,10 +70,7 @@ export const connectCommand = Command.make(
               ...(password ? { password } : {}),
               viewOnly,
             },
-            {
-              ...(localPort === undefined ? {} : { port: localPort }),
-              viewer,
-            },
+            localPort === undefined ? {} : { port: localPort },
           ),
         catch: (cause) => new ViewerStartError({ cause }),
       });
@@ -109,10 +102,6 @@ export const connectCommand = Command.make(
     {
       command: "yesvnc connect studio --view-only",
       description: "Connect without sending input",
-    },
-    {
-      command: "yesvnc connect studio --viewer novnc",
-      description: "Connect with the full noVNC control bar",
     },
   ]),
 );

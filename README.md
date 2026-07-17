@@ -26,7 +26,6 @@ The production domain and release bucket are intentionally easy to replace befor
 yesvnc add studio studio-mac.local:5900
 yesvnc list
 yesvnc connect studio
-yesvnc connect studio --viewer novnc
 yesvnc connect vnc://192.168.1.20:5900
 yesvnc remove studio
 ```
@@ -34,8 +33,8 @@ yesvnc remove studio
 Use `YESVNC_PASSWORD` to prefill a password for one invocation, or enter it in the local viewer.
 Passwords are never written to the connection store.
 
-The default viewer is yesVNC's compact interface. Pass `--viewer novnc` to use noVNC's full,
-battle-tested control bar with clipboard, scaling, quality, keyboard, and reconnection controls.
+Connections use noVNC's full control bar with clipboard, scaling, quality, keyboard, and
+reconnection controls.
 
 ## Develop
 
