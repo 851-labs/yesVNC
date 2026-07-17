@@ -71,8 +71,11 @@ async function smokeViewer() {
     const bootstrap = await fetch(`http://127.0.0.1:${viewer.port}/app/yesvnc-bootstrap.js`).then(
       (response) => response.text(),
     );
-    if (!bootstrap.includes("RFB.cursors.dot = fallbackCursor")) {
-      throw new Error("Accessible noVNC fallback cursor was not served");
+    if (
+      !bootstrap.includes("installSystemFallbackCursor") ||
+      !bootstrap.includes('this._target.style.cursor = "default"')
+    ) {
+      throw new Error("Native noVNC fallback cursor was not served");
     }
     const missing = await fetch(`http://127.0.0.1:${viewer.port}/missing.js`);
     if (missing.status !== 404) throw new Error("Missing noVNC assets did not return 404");

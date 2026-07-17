@@ -10,8 +10,8 @@ yesVNC carries a small integration patch:
 
 - Load settings from an external bootstrap module so a strict CSP can be used.
 - Accept a configured username in the initial RFB credentials and credential dialog.
-- Replace noVNC's 3px fallback dot with an accessible high-contrast cursor. The
-  fallback is only shown when the VNC server supplies no visible cursor.
+- Replace noVNC's 3px fallback dot with the platform's native default cursor.
+  The fallback is only shown when the VNC server supplies no visible cursor.
 - Use the yesVNC page title.
 
 `core/`, `vendor/`, package metadata, and licenses are copied from the pinned

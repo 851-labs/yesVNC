@@ -3,40 +3,29 @@
 
 import UI from "./ui.js";
 import RFB from "../core/rfb.js";
+import Cursor from "../core/util/cursor.js";
 import * as Log from "../core/util/logging.js";
 
-function createFallbackCursor() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 24;
-  canvas.height = 24;
+function installSystemFallbackCursor() {
+  const systemCursorPixels = new Uint8Array();
+  const changeCursor = Cursor.prototype.change;
 
-  const context = canvas.getContext("2d");
-  if (!context) {
-    return null;
-  }
+  Cursor.prototype.change = function (rgba, hotx, hoty, width, height) {
+    if (rgba === systemCursorPixels) {
+      this.clear();
+      this._target.style.cursor = "default";
+      return;
+    }
 
-  context.beginPath();
-  context.moveTo(2, 1);
-  context.lineTo(2, 18);
-  context.lineTo(7, 13);
-  context.lineTo(11, 22);
-  context.lineTo(15, 20);
-  context.lineTo(11, 12);
-  context.lineTo(18, 12);
-  context.closePath();
-  context.fillStyle = "#fff";
-  context.fill();
-  context.lineJoin = "round";
-  context.lineWidth = 2;
-  context.strokeStyle = "#000";
-  context.stroke();
+    changeCursor.call(this, rgba, hotx, hoty, width, height);
+  };
 
-  return {
-    rgbaPixels: context.getImageData(0, 0, canvas.width, canvas.height).data,
-    w: canvas.width,
-    h: canvas.height,
-    hotx: 2,
-    hoty: 1,
+  RFB.cursors.dot = {
+    rgbaPixels: systemCursorPixels,
+    w: 1,
+    h: 1,
+    hotx: 0,
+    hoty: 0,
   };
 }
 
@@ -58,9 +47,6 @@ const [defaults, mandatory] = await Promise.all([
   loadSettings("./mandatory.json"),
 ]);
 
-const fallbackCursor = createFallbackCursor();
-if (fallbackCursor) {
-  RFB.cursors.dot = fallbackCursor;
-}
+installSystemFallbackCursor();
 
 UI.start({ settings: { defaults, mandatory } });
