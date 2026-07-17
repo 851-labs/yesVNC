@@ -5,9 +5,13 @@ import { Argument, Command, Flag } from "effect/unstable/cli";
 import { BrowserService, ConnectionStoreService, startViewerServer } from "../services";
 
 export class ConnectTargetError extends Data.TaggedError("ConnectTargetError")<{
+  readonly suggestion?: string;
   readonly target: string;
 }> {
   override get message() {
+    if (this.suggestion) {
+      return `error: no saved connection named "${this.target}"\nhint: did you mean "${this.suggestion}"?\nhint: use vnc://${this.target} to connect to that hostname directly`;
+    }
     return `error: "${this.target}" is neither a saved connection nor a valid VNC address\nhint: run yesvnc list or use host:port`;
   }
 }
@@ -106,7 +110,7 @@ export const connectCommand = Command.make(
   ]),
 );
 
-function resolveTarget(
+export function resolveTarget(
   target: string,
   store: { readonly read: () => Effect.Effect<{ connections: readonly Connection[] }, unknown> },
 ) {
@@ -115,11 +119,57 @@ function resolveTarget(
     const saved = connections.find((connection) => connection.name === target);
     if (saved) return saved;
 
+    const suggestion = suggestConnectionName(
+      target,
+      connections.map((connection) => connection.name),
+    );
+    if (suggestion) {
+      return yield* Effect.fail(new ConnectTargetError({ suggestion, target }));
+    }
+
     return yield* parseVncAddress(target).pipe(
       Effect.map((address) => ({ ...address, name: target })),
       Effect.mapError(() => new ConnectTargetError({ target })),
     );
   });
+}
+
+export function suggestConnectionName(
+  target: string,
+  connectionNames: readonly string[],
+): string | undefined {
+  if (target.includes("://") || connectionNames.length === 0) return undefined;
+
+  const normalizedTarget = target.toLowerCase();
+  const maxDistance = normalizedTarget.length <= 4 ? 1 : normalizedTarget.length <= 12 ? 2 : 3;
+  let closest: { distance: number; name: string } | undefined;
+
+  for (const name of connectionNames) {
+    const distance = editDistance(normalizedTarget, name.toLowerCase());
+    if (distance > maxDistance || (closest && distance >= closest.distance)) continue;
+    closest = { distance, name };
+  }
+
+  return closest?.name;
+}
+
+function editDistance(left: string, right: string): number {
+  let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      const substitutionCost = left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1]! + 1,
+        previous[rightIndex]! + 1,
+        previous[rightIndex - 1]! + substitutionCost,
+      );
+    }
+    previous = current;
+  }
+
+  return previous[right.length]!;
 }
 
 function waitForShutdown(): Promise<void> {
