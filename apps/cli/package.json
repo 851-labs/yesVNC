@@ -1,6 +1,6 @@
 {
   "name": "@851-labs/yesvnc",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Manage VNC connections from the command line and open them in your browser.",
   "keywords": [
     "cli",
